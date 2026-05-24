@@ -1,0 +1,49 @@
+name: Cypress E2E Tests
+
+on:
+  push:
+    branches: [ main ]       # jalankan saat push ke main
+  pull_request:
+    branches: [ main ]       # jalankan saat ada pull request
+
+jobs:
+  cypress-run:
+    runs-on: ubuntu-latest   # pakai server Ubuntu
+
+    steps:
+      # Step 1 - Ambil kode dari repo
+      - name: Checkout kode
+        uses: actions/checkout@v4
+
+      # Step 2 - Install Node.js
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      # Step 3 - Install dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4 - Jalankan Cypress
+      - name: Jalankan Cypress Tests
+        uses: cypress-io/github-action@v6
+        with:
+          browser: chrome
+
+      # Step 5 - Upload screenshot kalau test gagal
+      - name: Upload screenshots jika gagal
+        uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots
+
+      # Step 6 - Upload video hasil test
+      - name: Upload videos
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cypress-videos
+          path: cypress/videos
